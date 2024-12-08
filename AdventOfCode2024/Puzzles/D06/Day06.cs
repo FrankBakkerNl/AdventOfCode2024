@@ -56,8 +56,7 @@ public class Day06
     static (int x, int y) Add((int x, int y) a, (int x, int y) b) => (a.x + b.x, a.y + b.y);
         
     [Result(1711)]
-    //[TestCase(result: 6)]
-    [Focus]
+    [TestCase(result: 6)]
     public static long GetAnswer2(string[] input)
     {
         var (map, position) = ParseMap(input);
