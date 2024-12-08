@@ -24,7 +24,7 @@ public class Day08
         var all = antennas.ToArray();
         for (var i = 0; i < all.Length-1; i++)
         {
-            for (var j = i+1; j < all.Length; j++)
+            for (var j = i + 1; j < all.Length; j++)
             {
                 var pos1 = all[i];
                 var pos2 = all[j];
@@ -35,13 +35,42 @@ public class Day08
         }
     }
 
-    //[Result(0)]
-    [TestCase(result: 0)]
+    [Result(839)]
+    [TestCase(result: 34)]
     public static long GetAnswer2(string[] input)
     {
-        return 0;
-    }
+        var map = Parse(input).GroupBy(t=>t.name, t=>t.position);
+        var xBound = input[0].Length;
+        var yBound = input.Length;
 
+        return map
+            .SelectMany(grouping => GetAntiPositions2(grouping, xBound, yBound))
+            .Distinct()
+            .Count();
+    }
+    
+    private static IEnumerable<Position> GetAntiPositions2(IEnumerable<Position> antennas, int xBounds, int yBounds)
+    {
+        var all = antennas.ToArray();
+        for (var i = 0; i < all.Length-1; i++)
+        {
+            for (var j = i + 1; j < all.Length; j++)
+            {
+                var pos1 = all[i];
+                var pos2 = all[j];
+                var delta = pos1 - pos2;
+                for (var anti = pos1; anti.InBounds(xBounds, yBounds); anti += delta)
+                {
+                    yield return anti;
+                }
+                for (var anti = pos2; anti.InBounds(xBounds, yBounds); anti -= delta)
+                {
+                    yield return anti;
+                }
+            }
+        }
+    }
+    
     static IEnumerable<(char name, Position position)> Parse(string[] input)
     {
         for (int y = 0; y < input[0].Length; y++)
@@ -57,9 +86,9 @@ public class Day08
 
     record Position(int X, int Y)
     {
-        public static Position operator +(Position a, Position b) => new(a.X + b.X, a.Y + b.Y);
-        public static Position operator -(Position a, Position b) => new(a.X - b.X, a.Y - b.Y);
-        public static Position operator -(Position a) => new(-a.X, -a.Y);
-        public bool InBounds(int xbound, int yBound) => X >= 0 && X < xbound && Y >= 0 && Y < yBound;
+        public static Position operator + (Position a, Position b) => new(a.X + b.X, a.Y + b.Y);
+        public static Position operator - (Position a, Position b) => new(a.X - b.X, a.Y - b.Y);
+        public static Position operator - (Position a) => new(-a.X, -a.Y);
+        public bool InBounds(int xBound, int yBound) => X >= 0 && X < xBound && Y >= 0 && Y < yBound;
     }
 }
