@@ -7,7 +7,7 @@ public class InputDataManager
 {
     public static object[]? GetInputArgs(MethodInfo method, string fileName = "input")
     {
-        var filePath = $@"C:\Git\Personal\AdventOfCode2024\AdventOfCode2024\Puzzles\D{method.DeclaringType?.Name[3..5]}\{fileName}.txt";
+        var filePath = $@"..\..\..\Puzzles\D{method.DeclaringType?.Name[3..5]}\{fileName}.txt";
 
         var param = method.GetParameters().FirstOrDefault();
         if (param == null)
