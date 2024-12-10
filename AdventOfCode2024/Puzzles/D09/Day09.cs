@@ -5,13 +5,12 @@
 /// </summary>
 public class Day09
 {
-    //[Result(0)] 2073992045 to low  3481838364193 to low
+    [Result(6288599492129)]
     [TestCase(result: 60, "ExampleInput1a")]
     [TestCase(result: 1928)]
-    [Focus]
     public static long GetAnswer1(string input)
     {
-        // Avoid parsing the entire sting into integers,
+        // Avoid parsing the entire string into integers,
         // we only need each value at most once, so we will fetch and convert as needed from the original string
         int GetValue(int index) => input[index] - '0';
 
@@ -63,10 +62,69 @@ public class Day09
     }
 
     
-    //[Result(0)]
-    [TestCase(result: 0)]
-    public static long GetAnswer2(string[] input)
+    [Result(6321896265143)]
+    [TestCase(result: 2858)]
+    public static long GetAnswer2(string input)
     {
-        return 0;
+        var (files, gaps) = GetSegments(input);
+
+        var accumulator = 0L;
+
+        for (var fileId = files.Length - 1; fileId >= 0; fileId--)
+        {
+            var file = files[fileId];
+            ref var fitGap = ref FindGap(gaps, file.Size);
+            if (fitGap == Block.Null || fitGap.BlockId >= file.BlockId)
+            {
+                // Does not fit in a gap, so take the Checksum of original position 
+                accumulator += GetSegmentChecksum(file.BlockId, fileId, file.Size);
+                continue;
+            }
+
+            // Calculate the Checksum for the new position
+            accumulator += GetSegmentChecksum(fitGap.BlockId, fileId, file.Size);
+
+            var remainingGap = new Block(fitGap.BlockId + file.Size, Max(0, fitGap.Size - file.Size));
+            fitGap = remainingGap;
+        }
+
+        return accumulator;
+    }
+
+    static ref Block FindGap(Block[] gaps, int fileSize)
+    {
+        for (var i = 0; i < gaps.Length; i++)
+        {
+            ref var gap = ref gaps[i];
+            if (gap.Size >= fileSize) return ref gap;
+        }
+
+        return ref Block.Null;
+    }
+
+    record struct Block(int BlockId, int Size)
+    {
+        public static Block Null = new (0, 0);
+    }
+    
+    static (Block[] files, Block[] gaps) GetSegments(string input)
+    {
+        var gaps = new Block[(input.Length - 1) / 2];
+        var files = new Block[(input.Length + 1) / 2];
+        
+        var blockId = 0;
+        for (var i = 0; i < input.Length; i++)
+        {
+            var gapSize = input[i] - '0';
+            
+            if (i % 2 == 0)
+                files[i/2] = new (blockId, gapSize);
+            else
+                gaps[i/2] = new (blockId, gapSize);;
+            
+            blockId += gapSize;
+        }
+
+        return (files, gaps);
     }
 }

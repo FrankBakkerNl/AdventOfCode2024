@@ -46,7 +46,7 @@ public partial class Day03
             }
             else if (doMode)
             {
-                yield return (int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value));
+                yield return (int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value));
             }
         }
     }
@@ -55,7 +55,7 @@ public partial class Day03
     [GeneratedRegex("mul\\((\\d+),(\\d+)\\)")]
     private static partial Regex MulRegex();
     
-    [GeneratedRegex("(mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\))")]
+    [GeneratedRegex("mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\)")]
     private static partial Regex MulDpDOntRegex();
 
     

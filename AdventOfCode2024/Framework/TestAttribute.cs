@@ -7,6 +7,7 @@ class SkipAttribute : Attribute
 {
 }
     
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
 class TestCase : Attribute
 {
     public string? Filename { get; }
