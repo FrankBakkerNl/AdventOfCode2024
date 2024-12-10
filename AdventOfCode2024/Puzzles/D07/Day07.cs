@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2024.Puzzles.DayXX;
+﻿using System.Diagnostics;
+
+namespace AdventOfCode2024.Puzzles.DayXX;
 
 /// <summary>
 /// https://adventofcode.com/2024/day/07
@@ -58,25 +60,36 @@ public class Day07
         var equations = ParseInput(input);
         
         return equations
-            .Where(equation => HasPossibleValueRecursive(equation, 0, 0))
+            .Where(equation => HasPossibleValueRecursive(equation.Result, equation.Terms, 0))
             .Sum(e => e.Result);
     }
 
-    static bool HasPossibleValueRecursive(Equation equation, long register, int termsUsed)
+    static bool HasPossibleValueRecursive(long expectedResult, ReadOnlySpan<int> remainingTerms, long register)
     {
         // Stop recursion
-        if (termsUsed == equation.Terms.Length) return register == equation.Result;
+        if (remainingTerms.Length == 0) return register == expectedResult;
     
-        if (register > equation.Result) return false; // values only increase so we can stop now
+        if (register > expectedResult) return false; // values only increase so we can stop now
 
-        var nextTerm = equation.Terms[termsUsed];
+        var nextTerm = remainingTerms[0];
 
-        return HasPossibleValueRecursive(equation, termsUsed == 0 ? nextTerm : register * nextTerm, termsUsed + 1) ||
-               HasPossibleValueRecursive(equation, register + nextTerm, termsUsed + 1) ||
-               HasPossibleValueRecursive(equation, Concat(register, nextTerm), termsUsed + 1);
+        var nextTerms = remainingTerms[1..];
+        return HasPossibleValueRecursive(expectedResult, nextTerms, register == 0 ? nextTerm : register * nextTerm) ||
+               HasPossibleValueRecursive(expectedResult, nextTerms, Concat(register, nextTerm)) ||
+               HasPossibleValueRecursive(expectedResult, nextTerms, register + nextTerm);
     }
 
-    static long Concat(long x, long y) => long.Parse(x.ToString() + y.ToString());
+    static long Concat(long x, long y)
+    {
+        var remY = y;
+        while (remY >= 10)
+        {
+            remY /= 10;
+            x *= 10;
+        }
+
+        return x * 10 + y;
+    }
 
     static Equation[] ParseInput(string[] input) => input.Select(ParseLine).ToArray();
 
@@ -87,5 +100,5 @@ public class Day07
             line[(split + 2) ..].Split(' ', StringSplitOptions.TrimEntries).Select(int.Parse).ToArray());
     }
 
-    record Equation(long Result, int[] Terms);
+    record struct Equation(long Result, int[] Terms);
 }
