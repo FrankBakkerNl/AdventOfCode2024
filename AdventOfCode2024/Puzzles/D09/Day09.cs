@@ -68,13 +68,18 @@ public class Day09
     {
         var (files, gaps) = GetSegments(input);
 
+        // For each gap size keep track of the lowest possible position it could fit
+        Span<int> gapSearchStartValue = stackalloc int[10];
+
         var accumulator = 0L;
 
         for (var fileId = files.Length - 1; fileId >= 0; fileId--)
         {
             var file = files[fileId];
-            ref var fitGap = ref FindGap(gaps, file.Size);
-            if (fitGap == Block.Null || fitGap.BlockId >= file.BlockId)
+            
+            ref var fitGap = ref FindGap(gaps, file.Size, ref gapSearchStartValue[file.Size], fileId);
+            
+            if (fitGap == Block.Null)
             {
                 // Does not fit in a gap, so take the Checksum of original position 
                 accumulator += GetSegmentChecksum(file.BlockId, fileId, file.Size);
@@ -84,18 +89,18 @@ public class Day09
             // Calculate the Checksum for the new position
             accumulator += GetSegmentChecksum(fitGap.BlockId, fileId, file.Size);
 
-            var remainingGap = new Block(fitGap.BlockId + file.Size, Max(0, fitGap.Size - file.Size));
-            fitGap = remainingGap;
+            // Update gap in place to new position and remaining size
+            fitGap = new Block(fitGap.BlockId + file.Size, fitGap.Size - file.Size);
         }
 
         return accumulator;
     }
 
-    static ref Block FindGap(Block[] gaps, int fileSize)
+    static ref Block FindGap(Block[] gaps, int fileSize, ref int startSearch, int stopSearch)
     {
-        for (var i = 0; i < gaps.Length; i++)
+        for (; startSearch < stopSearch; startSearch++)
         {
-            ref var gap = ref gaps[i];
+            ref var gap = ref gaps[startSearch];
             if (gap.Size >= fileSize) return ref gap;
         }
 
@@ -115,14 +120,14 @@ public class Day09
         var blockId = 0;
         for (var i = 0; i < input.Length; i++)
         {
-            var gapSize = input[i] - '0';
+            var size = input[i] - '0';
             
             if (i % 2 == 0)
-                files[i/2] = new (blockId, gapSize);
+                files[i/2] = new (blockId, size);
             else
-                gaps[i/2] = new (blockId, gapSize);;
+                gaps[i/2] = new (blockId, size);;
             
-            blockId += gapSize;
+            blockId += size;
         }
 
         return (files, gaps);
